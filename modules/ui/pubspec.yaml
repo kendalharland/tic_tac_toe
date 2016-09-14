@@ -1,0 +1,8 @@
+name: tic_tac_toe.ui
+
+dependencies:
+  tic_tac_toe.net:
+    path: ../net
+  tic_tac_toe.state:
+    path: ../state
+

@@ -1,0 +1,7 @@
+name: tic_tac_toe.server
+
+dependencies:
+  tic_tac_toe.net:
+    path: ../net
+  tic_tac_toe.state:
+    path: ../state

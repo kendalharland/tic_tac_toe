@@ -1,1 +1,7 @@
 name: tic_tac_toe.state
+
+dependencies:
+  collection:
+
+dev_dependencies:
+  test:

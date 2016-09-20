@@ -86,6 +86,9 @@ class Board {
     }
   }
 
+  /// Returns a flat list over the values of the board.
+  List<Space> toValues() => _spaces.expand((x) => x);
+
   /// Return what [Space] should go next.
   ///
   /// Throws [StateError] if [isOver] is `true`.

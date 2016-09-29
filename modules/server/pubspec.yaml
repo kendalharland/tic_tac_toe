@@ -5,3 +5,9 @@ dependencies:
     path: ../net
   tic_tac_toe.state:
     path: ../state
+  express:
+  fixnum:
+  
+dev_dependencies:
+  test:
+  mockito:

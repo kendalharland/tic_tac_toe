@@ -40,20 +40,17 @@ abstract class Database<K, V> {
 
   Future<V> remove(K key);
   
-  Future<Null> shutdown();
+  // Future<Null> shutdown();
 }
 
-class _FlatFileDatabase<V> implements Database<String, V> {
+class FlatFileDatabase<V> implements Database<String, V> {
   final File _file;
   final Serializer _serializer;
   final String _kvDelim = '«';
   final Map<String, T> _records;
-
-  _FlatFileDatabase(String filePath, this._serializer)
-      : _file = new File(filePath) {
-    if (!_file.existsSync) {
-      _file.createSync();
-    }
+  
+  FlatFileDatabase(this._file, this._serializer) {
+    assert(_file.existsSync());
     _file.readAsLinesSync().forEach((String entry) {
       var parts = entry.split(_kvDelim);
       assert(parts.length == 2);
@@ -98,7 +95,7 @@ class _FlatFileDatabase<V> implements Database<String, V> {
   }
   
   
-  @override
-  Future<Null> shutdown()
+  // @override
+  // Future<Null> shutdown()
   
 }

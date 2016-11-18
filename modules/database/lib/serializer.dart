@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:tic_tac_toe.server/api.dart';
 
 abstract class Serializer<T> {
-  factory Serializer.json() => new _JsonSerializer();
+  factory Serializer.noop() => new _NoopSerializer();
 
   String serialize(T object);
 
@@ -24,4 +24,10 @@ class BoardSerializer implements Serializer<Board> {
   String serializer(Board board) => board.toString();
 
   Board deserialize(String board) => new User.from(_decoder.decode(board));
+}
+
+class _NoopSerializer<T> implements Serializer<T> {
+  T serialize(T object) => object;
+
+  T deserialize(T object) => object;
 }

@@ -22,7 +22,8 @@ void main() {
 
   void commonSetUp({List<Int64> validUsers: const []}) {
     mockAuthService = new MockAuthService(validUsers);
-    controller = new Controller.fromServices(new GameService(), mockAuthService);
+    controller =
+        new Controller.fromServices(new GameService(), mockAuthService);
   }
 
   // In case a test passes because client forgot to call `commonSetUp`.

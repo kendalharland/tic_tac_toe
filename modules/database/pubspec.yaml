@@ -1,0 +1,10 @@
+name: tic_tac_toe.database
+
+dependencies:
+  tic_tac_toe.server:
+    path: ../server
+  fixnum:
+  
+dev_dependencies:
+  test:
+  mockito:

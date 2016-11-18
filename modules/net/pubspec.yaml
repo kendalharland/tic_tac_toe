@@ -3,3 +3,8 @@ name: tic_tac_toe.net
 dependencies:
   tic_tac_toe.state:
     path: ../state
+  fixnum:
+
+dev_dependencies:
+  test:
+  mockito:

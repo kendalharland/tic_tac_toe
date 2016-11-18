@@ -4,7 +4,7 @@ import "dart:convert";
 
 import "package:fixnum/fixnum.dart";
 import "package:tic_tac_toe.state/state.dart";
-import "package:tic_tac_toe.server/api.dart";
+import "package:tic_tac_toe.net/src/messages.dart";
 
 class Client {
   String _marshall(Object decodedJson) =>

@@ -1,7 +1,6 @@
 import 'dart:convert';
 
-import 'package:tic_tac_toe.server/api.dart';
-import 'package:tic_tac_toe.state/state.dart';
+import 'package:tic_tac_toe.net/net.dart';
 
 import 'package:fixnum/fixnum.dart';
 
@@ -14,25 +13,13 @@ abstract class Serializer<T> {
   T deserialize(String object);
 }
 
-/// Serializes [Iterable<T>] instances.
-///
-/// [Iterable]s are comma-delimited during serialization, so attempting to
-/// serialize a collection of strings containing commas will result in
-/// improper deserialization.
-class IterableSerializer<T> implements Serializer<Iterable<T>> {
-  final Serializer<T> _delegate;
-
-  const IterableSerializer(this._delegate);
+/// A no-op [Serializer] implementation.
+class StringSerializer implements Serializer<String> {
+  @override
+  String serialize(String object) => object;
 
   @override
-  String serialize(Iterable<T> iterable) =>
-      '(' + iterable.map(_delegate.serialize).join(',') + ')';
-
-  @override
-  Iterable<T> deserialize(String iterable) {
-    iterable = iterable.substring(1, iterable.length - 2);
-    return iterable.split(',').map(_delegate.deserialize);
-  }
+  String deserialize(String object) => object;
 }
 
 class Int64Serializer implements Serializer<Int64> {
@@ -56,19 +43,6 @@ class UserSerializer implements Serializer<User> {
   @override
   User deserialize(String user) =>
       new User.fromJson(_decoder.convert(user) as Map<String, Object>);
-}
-
-class BoardSerializer implements Serializer<Board> {
-  static const _decoder = const JsonDecoder();
-
-  const BoardSerializer();
-
-  @override
-  String serialize(Board board) => board.toString();
-
-  @override
-  Board deserialize(String board) =>
-      new Board.fromJson(_decoder.convert(board) as List<List<String>>);
 }
 
 class GameSerializer implements Serializer<Game> {

@@ -1,33 +1,85 @@
 import 'dart:convert';
 
 import 'package:tic_tac_toe.server/api.dart';
+import 'package:tic_tac_toe.state/state.dart';
 
+import 'package:fixnum/fixnum.dart';
+
+/// An object that serializes instances of [T] to and from Strings.
 abstract class Serializer<T> {
-  factory Serializer.noop() => new _NoopSerializer();
-
+  /// Converts [object] to an instance of S.
   String serialize(T object);
 
+  /// Converts [object] to an instance of D.
   T deserialize(String object);
+}
+
+/// Serializes [Iterable<T>] instances.
+///
+/// [Iterable]s are comma-delimited during serialization, so attempting to
+/// serialize a collection of strings containing commas will result in
+/// improper deserialization.
+class IterableSerializer<T> implements Serializer<Iterable<T>> {
+  final Serializer<T> _delegate;
+
+  const IterableSerializer(this._delegate);
+
+  @override
+  String serialize(Iterable<T> iterable) =>
+      '(' + iterable.map(_delegate.serialize).join(',') + ')';
+
+  @override
+  Iterable<T> deserialize(String iterable) {
+    iterable = iterable.substring(1, iterable.length - 2);
+    return iterable.split(',').map(_delegate.deserialize);
+  }
+}
+
+class Int64Serializer implements Serializer<Int64> {
+  const Int64Serializer();
+
+  @override
+  String serialize(Int64 number) => number.toString();
+
+  @override
+  Int64 deserialize(String number) => new Int64.fromBytes(number.codeUnits);
 }
 
 class UserSerializer implements Serializer<User> {
   static const _decoder = const JsonDecoder();
 
-  String serializer(User user) => user.toString();
+  const UserSerializer();
 
-  User deserialize(String user) => new User.from(_decoder.decode(user));
+  @override
+  String serialize(User user) => user.toString();
+
+  @override
+  User deserialize(String user) =>
+      new User.fromJson(_decoder.convert(user) as Map<String, Object>);
 }
 
 class BoardSerializer implements Serializer<Board> {
   static const _decoder = const JsonDecoder();
 
-  String serializer(Board board) => board.toString();
+  const BoardSerializer();
 
-  Board deserialize(String board) => new User.from(_decoder.decode(board));
+  @override
+  String serialize(Board board) => board.toString();
+
+  @override
+  Board deserialize(String board) =>
+      new Board.fromJson(_decoder.convert(board) as List<List<String>>);
 }
 
-class _NoopSerializer<T> implements Serializer<T> {
-  T serialize(T object) => object;
+class GameSerializer implements Serializer<Game> {
+  static const _decoder = const JsonDecoder();
 
-  T deserialize(T object) => object;
+  const GameSerializer();
+
+  @override
+  String serialize(Game game) => game.toString();
+
+  @override
+  Game deserialize(String game) =>
+      new Game.fromJson(_decoder.convert(game) as Map<String, Object>);
 }

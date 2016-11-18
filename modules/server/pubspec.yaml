@@ -5,6 +5,8 @@ dependencies:
     path: ../net
   tic_tac_toe.state:
     path: ../state
+  tic_tac_toe.database:
+    path: ../database
   express:
   fixnum:
   

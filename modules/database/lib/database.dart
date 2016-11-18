@@ -1,70 +1,61 @@
-import 'package:fixnum/fixnum.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:tic_tac_toe.database/serializer.dart';
 
-class TicTacToeDatabase {
-  final Database _userDatabase;
-  final Database _gameDatabase;
-
-  TicTacToeDatabase(String directory)
-      : _userDatabase = new _FlatFileDatabase<User>(
-            '$directory/users.db', new UserSerializer()),
-        _gameDatabase = new _FlatFileDatabase<Board>(
-            '$directory/games.db', new BoardSerializer());
-
-  Stream<Iterable<User>> getAllUsers();
-
-  Future<User> getUser(Int64 userId);
-
-  Stream<Iterable<User>> getGameUsers(Int64 gameId);
-
-  Stream<Iterable<Board>> getAllGames();
-
-  Future<Board> insertGame();
-
-  Future<Board> removeGame(Int64 gameId);
-
-  Future<Board> getGame(Int64 gameId);
-
-  Future<Board> setGame(Board state);
-
-  Future<Game> addUserToGame(Int64 userId, Int64 gameId);
-
-  Future<Game> removeUserFromGame(Int64 userId, Int64 gameId);
-}
-
+/// A very naive key-value store.
 abstract class Database<K, V> {
+  /// The keys in this [Database].
+  Set<K> get keys;
+
+  /// Associates [value] with [key].
   Future<V> insert(K key, V value);
 
+  /// Associates [value] with [key].
+  ///
+  /// If a value already exists for [key] an Exception is thrown.
   Future<V> update(K key, V value);
 
+  /// Returns the value associated with [key] or null if non exists.
   Future<V> get(K key);
 
+  /// Remove the value associated with [key] if one exists.
   Future<V> remove(K key);
-  
-  // Future<Null> shutdown();
+
+  /// Returns all records in the databse that pass [filter].
+  Future<Iterable<V>> where(bool filter(K key, V value));
 }
 
-class FlatFileDatabase<V> implements Database<String, V> {
+/// A simple database that holds all data in-memory.
+///
+/// The contents can be written to disk via [saveOnDisk].
+class InMemoryDatabase<K, V> implements Database<K, V> {
   final File _file;
-  final Serializer _serializer;
+  final Serializer<K> _keySerializer;
+  final Serializer<V> _valueSerializer;
   final String _kvDelim = '«';
-  final Map<String, T> _records;
-  
-  FlatFileDatabase(this._file, this._serializer) {
+  final Map<K, V> _records = <K, V>{};
+
+  /// Creates an [InMemoryDatabase].
+  InMemoryDatabase(this._file, this._keySerializer, this._valueSerializer) {
     assert(_file.existsSync());
     _file.readAsLinesSync().forEach((String entry) {
       var parts = entry.split(_kvDelim);
       assert(parts.length == 2);
-      _records[parts.first] = _serializer.serialize(parts.last);
+      _records[_keySerializer.deserialize(parts.first)] =
+          _valueSerializer.deserialize(parts.last);
     });
   }
 
   @override
-  Future<V> insert(String key, V value) async {
+  Set<K> get keys => _records.keys.toSet();
+
+  @override
+  Future<V> insert(K key, V value) async {
     var oldValue = await get(key);
     if (oldValue != null) {
       throw new Exception('$key is already associated with $oldValue');
     }
-    _records[key] = _serializer.serialize(value);
+    _records[key] = value;
     return value;
   }
 
@@ -73,29 +64,40 @@ class FlatFileDatabase<V> implements Database<String, V> {
     if (await get(key) == null) {
       throw new Exception("No record associated with $key");
     }
-    _records[key] = _serializer.serialize(value);
+    _records[key] = value;
     return value;
   }
 
   @override
-  Future<V> get(K key) {
+  Future<V> get(K key) async => _records[key];
+
+  @override
+  Future<V> remove(K key) async {
     if (_records.containsKey(key)) {
-      return _serializer.deserialize(_records[key]);
+      return _records.remove(key);
     }
     return null;
   }
 
   @override
-  Future<V> remove(K key) async {
-    var value = await get(key);
-    if (value == null) {
-      return null;
-    }
-    return _serializer.deserialize(value);
+  Future<Iterable<V>> where(bool filter(K key, V value)) async {
+    var results = <V>[];
+
+    _records.forEach((K key, V value) {
+      if (filter(key, value)) {
+        results.add(value);
+      }
+    });
+    return results;
   }
-  
-  
-  // @override
-  // Future<Null> shutdown()
-  
+
+  /// Writes the contents of the database to the file supplied at construction.
+  Future<Null> saveOnDisk() async {
+    _records.forEach((K key, V value) {
+      _file
+        ..writeAsStringSync(_keySerializer.serialize(key))
+        ..writeAsStringSync(_kvDelim)
+        ..writeAsStringSync(_valueSerializer.serialize(value));
+    });
+  }
 }

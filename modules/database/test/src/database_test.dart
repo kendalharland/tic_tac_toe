@@ -17,13 +17,13 @@ void testDatabase(DatabaseProvider setup, Future<Null> teardown()) {
 
     tearDown(teardown);
 
-    test('keys should return the keys in the database', () async {
+    test('containsKey should return true if the database contains an entry for '
+        'the given key', () async {
       await database.insert('A', 'B');
       await database.insert('C', 'D');
-      expect(database.keys, unorderedEquals(['A', 'C']));
-
-      await database.remove('A');
-      expect(database.keys, unorderedEquals(['C']));
+      expect(database.containsKey('A'), isTrue);
+      expect(database.containsKey('C'), isTrue);
+      expect(database.containsKey('B'), isFalse);
     });
 
     test('insert should insert a value for some key', () async {

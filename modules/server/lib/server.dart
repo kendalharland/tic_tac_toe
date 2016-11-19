@@ -14,7 +14,7 @@ typedef Future RouteHandler(HttpContext ctx);
 // TODO(kjharland): Validate URL arguments to prevent crashing when invalid
 // types are parsed.
 Server createServer({String databaseRoot: '.'}) {
-  var server = new TicTacToeServer(new TicTacToeDatabase(databaseRoot));
+  var server = new Server(databaseRoot);
   return new Server(new Express()
     ..get('/game/create/:name', (HttpContext ctx) async {
       ctx.sendJson((await server.createGame(ctx.params['name'])).toJson());

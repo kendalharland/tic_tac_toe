@@ -4,8 +4,8 @@ import 'package:tic_tac_toe.database/serializer.dart';
 
 /// A very naive key-value store.
 abstract class Database<K, V> {
-  /// The keys in this [Database].
-  Set<K> get keys;
+  /// Whether this [Database] contains and entry for [key].
+  bool containsKey(K key);
 
   /// Associates [value] with [key].
   Future<V> insert(K key, V value);
@@ -49,7 +49,7 @@ class MemoryDatabase<K, V> implements Database<K, V> {
   }
 
   @override
-  Set<K> get keys => _records.keys.toSet();
+  bool containsKey(K key) => _records.containsKey(key);
 
   @override
   Future<V> insert(K key, V value) async {

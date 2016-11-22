@@ -4,12 +4,12 @@ import 'package:test/test.dart';
 import 'package:tic_tac_toe.database/database.dart';
 import 'package:tic_tac_toe.database/testing/testing_database.dart';
 import 'package:tic_tac_toe.net/net.dart';
-import 'package:tic_tac_toe.net/src/messages.dart';
+import 'package:tic_tac_toe.net/src/responses.dart';
 import 'package:tic_tac_toe.server/src/server.dart';
 import 'package:tic_tac_toe.state/state.dart';
 
 void main() {
-  Server server;
+  TicTacToeDatabase server;
   TestingDatabase<Int64, User> testUserDatabase;
   TestingDatabase<String, Game> testGameDatabase;
 
@@ -19,11 +19,11 @@ void main() {
     [Space.empty, Space.empty, Space.empty]
   ]);
 
-  group('$Server', () {
+  group('$TicTacToeDatabase', () {
     setUp(() {
       testUserDatabase = new TestingDatabase<Int64, User>();
       testGameDatabase = new TestingDatabase<String, Game>();
-      server = new Server.withDatabases(
+      server = new TicTacToeDatabase.withDatabases(
           userDatabase: testUserDatabase, gameDatabase: testGameDatabase);
     });
 
@@ -37,7 +37,7 @@ void main() {
       test('should complete with a GameMessage containing a new game',
           () async {
         var message = await server.createGame('A');
-        expect(message, new isInstanceOf<GameMessage>());
+        expect(message, new isInstanceOf<GameResponse>());
         expect(message.game.userIds, isEmpty);
         expect(message.game.state, startState);
       });
@@ -121,7 +121,7 @@ void main() {
 
       test('should fail with error if the new state has multiple additions',
           () async {
-        var originalState = server.getGameState(game.name);
+        var startState = (await server.getGameState(game.name)).state;
         var newState = new Board.fromSpaces([
           [Space.x, Space.empty, Space.empty],
           [Space.empty, Space.empty, Space.empty],
@@ -129,24 +129,26 @@ void main() {
         ]);
 
         expect((await server.setGameState(game.name, newState)).state, isNull);
-        expect((await server.getGameState(game.name)).state, originalState);
+        expect((await server.getGameState(game.name)).state, startState);
       });
 
-      test('should return original state if the new state has any deletions',
-          () {
+      test('should fail with error if the new state has any deletions',
+          () async {
+        var startState = (await server.getGameState(game.name)).state;
         var newState = new Board.fromSpaces([
           [Space.x, Space.empty, Space.empty],
           [Space.empty, Space.empty, Space.empty],
           [Space.empty, Space.empty, Space.empty]
         ]);
 
-        expect(server.setGameState(game.name, newState), newState);
-        expect(server.setGameState(game.name, startState), newState);
+        await server.setGameState(game.name, newState);
+        expect(
+            (await server.setGameState(game.name, startState)).state, isNull);
+        expect((await server.getGameState(game.name)).state, newState);
       });
 
-      test(
-          'should return original state if the new state has any '
-          'substitutions', () {
+      test('should fail with error if the new state has any substitutions',
+          () async {
         var newState = new Board.fromSpaces([
           [Space.x, Space.empty, Space.empty],
           [Space.empty, Space.empty, Space.empty],
@@ -159,8 +161,10 @@ void main() {
           [Space.empty, Space.empty, Space.empty]
         ]);
 
-        expect(server.setGameState(game.name, newState), newState);
-        expect(server.setGameState(game.name, substituteState), newState);
+        await server.setGameState(game.name, newState);
+        expect((await server.setGameState(game.name, substituteState)).state,
+            isNull);
+        expect((await server.getGameState(game.name)).state, newState);
       });
     });
   });

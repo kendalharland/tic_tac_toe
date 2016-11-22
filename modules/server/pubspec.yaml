@@ -9,7 +9,8 @@ dependencies:
     path: ../database
   express:
   fixnum:
-  
+  distributed:
+    git: git://github.com/kharland/distributed_dart.git
 dev_dependencies:
   test:
   mockito:

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'package:tic_tac_toe.database/database.dart';
 
 class TestingDatabase<K, V> implements Database<K, V> {
-  Map<K, V> entries = <K,V>{};
+  Map<K, V> entries;
 
   TestingDatabase.filled(this.entries);
 
-  TestingDatabase();
+  TestingDatabase() : entries = <K,V>{};
 
   @override
   bool containsKey(K key) => entries.containsKey(key);

@@ -29,31 +29,27 @@ class Int64Serializer implements Serializer<Int64> {
   String serialize(Int64 number) => number.toString();
 
   @override
-  Int64 deserialize(String number) => new Int64.fromBytes(number.codeUnits);
+  Int64 deserialize(String number) => Int64.parseInt(number);
 }
 
 class UserSerializer implements Serializer<User> {
-  static const _decoder = const JsonDecoder();
-
   const UserSerializer();
 
   @override
-  String serialize(User user) => user.toString();
+  String serialize(User user) => JSON.encode(user.toJson());
 
   @override
   User deserialize(String user) =>
-      new User.fromJson(_decoder.convert(user) as Map<String, Object>);
+      new User.fromJson(JSON.decode(user) as Map<String, Object>);
 }
 
 class GameSerializer implements Serializer<Game> {
-  static const _decoder = const JsonDecoder();
-
   const GameSerializer();
 
   @override
-  String serialize(Game game) => game.toString();
+  String serialize(Game game) => JSON.encode(game.toJson());
 
   @override
   Game deserialize(String game) =>
-      new Game.fromJson(_decoder.convert(game) as Map<String, Object>);
+      new Game.fromJson(JSON.decode(game) as Map<String, Object>);
 }

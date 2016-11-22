@@ -1,0 +1,13 @@
+const String addUser = 'addUser';
+const String getUser = 'getUser';
+const String getGame = 'getGame';
+const String createGame = 'createGame';
+const String joinGame = 'joinGame';
+const String setGameState = 'setGameState';
+const String addUserResponse = 'addUserResponse';
+const String getUserResponse = 'getUserResponse';
+const String getGameResponse = 'getGameResponse';
+const String createGameResponse = 'createGameResponse';
+const String joinGameResponse = 'joinGameResponse';
+const String opponentJoinedResponse = 'opponentJoinedResponse';
+const String setGameStateResponse = 'setGameStateResponse';

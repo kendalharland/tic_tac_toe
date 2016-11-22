@@ -27,7 +27,7 @@ abstract class Database<K, V> {
 
 /// A simple database that holds all data in-memory.
 ///
-/// The contents can be written to disk via [saveOnDisk].
+/// The contents can be written to disk via [writeToFile].
 class MemoryDatabase<K, V> implements Database<K, V> {
   final File _file;
   final Serializer<K> _keySerializer;
@@ -35,11 +35,11 @@ class MemoryDatabase<K, V> implements Database<K, V> {
   final String _kvDelim = '«';
   final Map<K, V> _records = <K, V>{};
 
-  /// Creates an [MemoryDatabase].
   MemoryDatabase(this._file, this._keySerializer, this._valueSerializer) {
-    if(!_file.existsSync()) {
+    if (!_file.existsSync()) {
       _file.createSync();
     }
+    _file.openSync();
     _file.readAsLinesSync().forEach((String entry) {
       var parts = entry.split(_kvDelim);
       assert(parts.length == 2);
@@ -58,6 +58,7 @@ class MemoryDatabase<K, V> implements Database<K, V> {
       throw new Exception('$key is already associated with $oldValue');
     }
     _records[key] = value;
+    await writeToFile();
     return value;
   }
 
@@ -67,6 +68,7 @@ class MemoryDatabase<K, V> implements Database<K, V> {
       throw new Exception("No record associated with $key");
     }
     _records[key] = value;
+    await writeToFile();
     return value;
   }
 
@@ -76,7 +78,9 @@ class MemoryDatabase<K, V> implements Database<K, V> {
   @override
   Future<V> remove(K key) async {
     if (_records.containsKey(key)) {
-      return _records.remove(key);
+      var record = _records.remove(key);
+      await writeToFile();
+      return record;
     }
     return null;
   }
@@ -94,12 +98,14 @@ class MemoryDatabase<K, V> implements Database<K, V> {
   }
 
   /// Writes the contents of the database to the file supplied at construction.
-  Future<Null> saveOnDisk() async {
+  Future<Null> writeToFile() async {
+    String data = '';
     _records.forEach((K key, V value) {
-      _file
-        ..writeAsStringSync(_keySerializer.serialize(key))
-        ..writeAsStringSync(_kvDelim)
-        ..writeAsStringSync(_valueSerializer.serialize(value));
+      data = '$data'
+          '${_keySerializer.serialize(key)}'
+          '$_kvDelim'
+          '${_valueSerializer.serialize(value)}\n';
     });
+    _file.writeAsStringSync(data);
   }
 }
